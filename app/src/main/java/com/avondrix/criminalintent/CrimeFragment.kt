@@ -16,13 +16,16 @@ import androidx.lifecycle.Observer
 
 private const val ARG_CRIME_ID = "crime_id"
 private const val DIALOG_DATE = "DialogDate"
+private const val DIALOG_TIME = "DialogTime"
 private const val DATE_PICKER_REQUEST_CODE = 1
+private const val TIME_PICKER_REQUEST_CODE = 2
 
-class CrimeFragment : Fragment(),DatePickerFragment.Callbacks {
+class CrimeFragment : Fragment(),DatePickerFragment.Callbacks, TimePickerFragment.TimeSelectCallbacks {
     private lateinit var crime: Crime
     private lateinit var title: TextView
     private lateinit var dateButton: Button
     private lateinit var solvedCheckBox: CheckBox
+    private lateinit var timeButton: Button
     private val viewModel: CrimeDetailViewModel by lazy {
         ViewModelProvider(this).get(CrimeDetailViewModel::class.java)
     }
@@ -44,6 +47,7 @@ class CrimeFragment : Fragment(),DatePickerFragment.Callbacks {
         dateButton = view.findViewById(R.id.crime_date)
         dateButton.text = crime.date.toString()
         solvedCheckBox = view.findViewById(R.id.crime_solved)
+        timeButton = view.findViewById(R.id.crime_time)
         return view
     }
 
@@ -62,7 +66,10 @@ class CrimeFragment : Fragment(),DatePickerFragment.Callbacks {
 
     private fun updateUI() {
         title.text = crime.title
-        dateButton.text = crime.date.toString()
+        val dateTime = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss",crime.date)
+        val dateAndTime = dateTime.split(" ")
+        dateButton.text = dateAndTime[0]
+        timeButton.text = dateAndTime[1]
         solvedCheckBox.apply {
             isChecked = crime.isSolved
 //            jumpDrawablesToCurrentState()
@@ -99,6 +106,12 @@ class CrimeFragment : Fragment(),DatePickerFragment.Callbacks {
                 setTargetFragment(this@CrimeFragment, DATE_PICKER_REQUEST_CODE)
             }
         }
+        timeButton.setOnClickListener {
+            TimePickerFragment.newInstance(crime.date).apply {
+                show(this@CrimeFragment.parentFragmentManager, DIALOG_TIME)
+                setTargetFragment(this@CrimeFragment, TIME_PICKER_REQUEST_CODE)
+            }
+        }
     }
 
     companion object {
@@ -113,6 +126,11 @@ class CrimeFragment : Fragment(),DatePickerFragment.Callbacks {
     }
 
     override fun onDateSelect(date: Date) {
+        crime.date = date
+        updateUI()
+    }
+
+    override fun onTimeSelect(date: Date) {
         crime.date = date
         updateUI()
     }
