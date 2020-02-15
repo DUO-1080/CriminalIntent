@@ -5,9 +5,7 @@ import android.os.Bundle
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -22,7 +20,7 @@ class CrimeListFragment : Fragment() {
     }
     private lateinit var crimeRecyclerView: RecyclerView
     private var adapter: CrimeAdapter? = CrimeAdapter(emptyList())
-    private var callback:Callbacks? = null
+    private var callback: Callbacks? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,6 +40,10 @@ class CrimeListFragment : Fragment() {
             viewLifecycleOwner,
             Observer {
                 updateUI(it)
+                if (it.isNotEmpty()) {
+                    callback?.hideEmptyView()
+                }else
+                    callback?.displayEmptyView()
             })
     }
 
@@ -52,19 +54,24 @@ class CrimeListFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.fragment_crime_list,menu)
+        inflater.inflate(R.menu.fragment_crime_list, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return  when (item.itemId) {
+        return when (item.itemId) {
             R.id.new_crime -> {
-                val crime = Crime()
-                crimeListViewModel.addCrime(crime)
-                callback?.onCrimeSelected(crime.id)
+                addCrime()
+                callback?.hideEmptyView()
                 true
             }
-            else ->  super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    fun addCrime() {
+        val crime = Crime()
+        crimeListViewModel.addCrime(crime)
+        callback?.onCrimeSelected(crime.id)
     }
 
     private fun updateUI(crimes: List<Crime>) {
@@ -72,8 +79,10 @@ class CrimeListFragment : Fragment() {
         crimeRecyclerView.adapter = adapter
     }
 
-    interface Callbacks{
-        fun onCrimeSelected(crimeId:UUID)
+    interface Callbacks {
+        fun onCrimeSelected(crimeId: UUID)
+        fun hideEmptyView()
+        fun displayEmptyView()
     }
 
     override fun onAttach(context: Context) {
@@ -122,7 +131,8 @@ class CrimeListFragment : Fragment() {
         fun bind(crime: Crime) {
             this.crime = crime
             titleTextView.text = crime.title
-            dateTextView.text = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss",crime.date)
+            dateTextView.text =
+                android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", crime.date)
             if (crime.isSolved) crimeSolved.visibility = View.VISIBLE else crimeSolved.visibility =
                 View.GONE
         }
