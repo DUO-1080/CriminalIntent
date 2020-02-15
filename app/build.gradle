@@ -27,6 +27,11 @@ android {
         sourceCompatibility = "1.8"
         targetCompatibility = "1.8"
     }
+    kapt {
+        arguments {
+            arg("room.schemaLocation", "$projectDir/schemas".toString())
+        }
+    }
 }
 
 dependencies {
