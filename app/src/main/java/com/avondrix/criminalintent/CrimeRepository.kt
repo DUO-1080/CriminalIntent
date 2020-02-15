@@ -3,6 +3,8 @@ package com.avondrix.criminalintent
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.avondrix.criminalintent.database.CrimeDatabase
 import java.lang.IllegalStateException
 import java.util.*
@@ -13,11 +15,19 @@ private const val DATABASE_NAME = "crime-database"
 
 class CrimeRepository private constructor(context: Context){
 
+    private val migration_1_2 = object : Migration(1,2) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("alter table Crime add column suspect text not null default ''")
+        }
+    }
     private val database:CrimeDatabase = Room.databaseBuilder(
         context.applicationContext,
         CrimeDatabase::class.java,
         DATABASE_NAME
-    ).build()
+    ).addMigrations(migration_1_2)
+        .build()
+
+
 
     private val crimeDao = database.crimeDao()
 
