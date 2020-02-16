@@ -20,11 +20,16 @@ class CrimeRepository private constructor(context: Context){
             database.execSQL("alter table Crime add column suspect text not null default ''")
         }
     }
+    private val migration_2_3 = object : Migration(2,3) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("alter table Crime add column phone text not null default ''")
+        }
+    }
     private val database:CrimeDatabase = Room.databaseBuilder(
         context.applicationContext,
         CrimeDatabase::class.java,
         DATABASE_NAME
-    ).addMigrations(migration_1_2)
+    ).addMigrations(migration_1_2,migration_2_3)
         .build()
 
 
